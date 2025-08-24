@@ -21,14 +21,12 @@ export class ClipperError extends Error {
 }
 
 async function runClipper(args: string[]): Promise<void> {
-	console.log(process.cwd())
-	const proc = Bun.spawn(
-		["C:\\Users\\Cody\\dev\\cab432_1\\clipper.exe", ...args],
-		{
-			stdout: "pipe",
-			stderr: "pipe",
-		}
-	)
+	const clipperPath = join(__dirname, "../../..", "bin", "clipper")
+
+	const proc = Bun.spawn([clipperPath, ...args], {
+		stdout: "pipe",
+		stderr: "pipe",
+	})
 
 	const [exitCode, stdout, stderr] = await Promise.all([
 		proc.exited,
