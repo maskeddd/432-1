@@ -1,3 +1,4 @@
+import { unlink } from "node:fs/promises"
 import { basename } from "node:path"
 import type { NextFunction, Request, Response } from "express"
 import { z } from "zod"
@@ -41,9 +42,17 @@ export async function clip(req: Request, res: Response, next: NextFunction) {
 			`attachment; filename="${basename(outputPath)}"`
 		)
 
-		res.sendFile(outputPath, (err) => {
+		res.sendFile(outputPath, async (err) => {
 			if (err) return next(err)
 			if (tempDir) cleanupTempDir(tempDir).catch(console.error)
+			if (inputFile?.path) {
+				try {
+					await unlink(inputFile.path)
+					console.log("Deleted uploaded file:", inputFile.path)
+				} catch (e) {
+					console.error("Failed to delete uploaded file:", e)
+				}
+			}
 		})
 	} catch (err) {
 		if (err instanceof SyntaxError || err instanceof z.ZodError) {
