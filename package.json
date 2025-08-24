@@ -1,0 +1,16 @@
+{
+  "name": "432_2",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "server"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "2.2.2",
+    "@types/bun": "latest",
+    "server": "workspace:*"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
