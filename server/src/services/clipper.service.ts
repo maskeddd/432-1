@@ -1,5 +1,5 @@
 import { join } from "node:path"
-import type { ClipperOptions, Segment } from "../schemas/clipper.schema.ts"
+import type { ClipperOptions, Segment } from "shared/src"
 
 export class ClipperError extends Error {
 	public readonly exitCode: number

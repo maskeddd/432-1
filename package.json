@@ -8,12 +8,14 @@
 	},
 	"workspaces": [
 		"server",
-		"client"
+		"client",
+		"shared"
 	],
 	"devDependencies": {
 		"@biomejs/biome": "2.2.2",
 
 		"server": "workspace:*",
-		"client": "workspace:*"
+		"client": "workspace:*",
+		"shared": "workspace:*"
 	}
 }
