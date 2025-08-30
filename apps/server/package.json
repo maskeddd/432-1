@@ -1,8 +1,11 @@
 {
-	"name": "server",
+	"name": "@apps/server",
 	"module": "src/server.ts",
 	"type": "module",
 	"private": true,
+	"scripts": {
+		"start": "bun run src/server.ts"
+	},
 	"devDependencies": {
 		"@types/bun": "latest"
 	},
@@ -18,6 +21,7 @@
 		"multer": "^2.0.2",
 		"strip-ansi": "^7.1.0",
 		"tmp": "^0.2.5",
-		"zod": "^4.1.3"
+		"zod": "^4.1.3",
+		"@packages/shared": "workspace:*"
 	}
 }

@@ -1,12 +1,12 @@
 import { unlink } from "node:fs/promises"
 import { basename } from "node:path"
-import type { NextFunction, Request, Response } from "express"
 import {
 	type ClipperOptions,
 	ClipperOptionsSchema,
 	type Segment,
 	SegmentSchema,
-} from "shared/src"
+} from "@packages/shared"
+import type { NextFunction, Request, Response } from "express"
 import { z } from "zod"
 import { processVideo } from "../services/clipper.service.ts"
 import { AppError } from "../utils/appError.util.ts"

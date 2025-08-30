@@ -3,19 +3,11 @@
 	"type": "module",
 	"private": true,
 	"packageManager": "bun@1.2.20",
-	"scripts": {
-		"server": "bun run ./server"
-	},
 	"workspaces": [
-		"server",
-		"client",
-		"shared"
+		"packages/*",
+		"apps/*"
 	],
 	"devDependencies": {
-		"@biomejs/biome": "2.2.2",
-
-		"server": "workspace:*",
-		"client": "workspace:*",
-		"shared": "workspace:*"
+		"@biomejs/biome": "2.2.2"
 	}
 }

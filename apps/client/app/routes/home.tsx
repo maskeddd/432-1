@@ -1,12 +1,12 @@
-import { Plus, Trash2 } from "lucide-react"
-import type React from "react"
-import { useState } from "react"
 import {
 	type ClipperOptions,
 	ClipperOptionsSchema,
 	type Segment,
 	SegmentSchema,
-} from "shared/src"
+} from "@packages/shared"
+import { Plus, Trash2 } from "lucide-react"
+import type React from "react"
+import { useState } from "react"
 
 type SegmentWithId = Segment & { id: number; raw: string }
 
@@ -112,7 +112,7 @@ export default function Home() {
 			formData.append("segments", JSON.stringify(parsedSegments))
 			formData.append("options", JSON.stringify(optResult.data))
 
-			const res = await fetch("http://localhost:3000/clip", {
+			const res = await fetch("http://angry_lumiere.orb.local/clip", {
 				method: "POST",
 				body: formData,
 			})
@@ -264,7 +264,7 @@ export default function Home() {
 									<input
 										type="number"
 										className="input input-bordered w-full mt-1"
-										placeholder="Duration (seconds)"
+										placeholder="duration (seconds)"
 										value={typeof options.fade === "number" ? options.fade : ""}
 										onChange={(e) =>
 											handleOptionChange(
@@ -298,7 +298,7 @@ export default function Home() {
 									className="btn btn-primary w-full"
 									disabled={loading}
 								>
-									{loading ? "Processing..." : "Submit"}
+									{loading ? "Processing..." : "submit"}
 								</button>
 								{error && <p className="text-error mt-2">{error}</p>}
 								{success && <p className="text-success mt-2">{success}</p>}

@@ -16,7 +16,7 @@
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0",
 		"react-router": "^7.7.1",
-		"shared": "workspace:*"
+		"@packages/shared": "workspace:*"
 	},
 	"devDependencies": {
 		"@react-router/dev": "^7.7.1",
@@ -26,8 +26,10 @@
 		"@types/react-dom": "^19.1.2",
 		"daisyui": "^5.0.50",
 		"tailwindcss": "^4.1.4",
-		"typescript": "^5.8.3",
 		"vite": "^6.3.3",
 		"vite-tsconfig-paths": "^5.1.4"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
 	}
 }

@@ -1,5 +1,5 @@
 import { join } from "node:path"
-import type { ClipperOptions, Segment } from "shared/src"
+import type { ClipperOptions, Segment } from "@packages/shared"
 
 export class ClipperError extends Error {
 	public readonly exitCode: number
@@ -21,9 +21,7 @@ export class ClipperError extends Error {
 }
 
 async function runClipper(args: string[]): Promise<void> {
-	const clipperPath = join(__dirname, "../../..", "bin", "clipper")
-
-	const proc = Bun.spawn([clipperPath, ...args], {
+	const proc = Bun.spawn(["clipper", ...args], {
 		stdout: "pipe",
 		stderr: "pipe",
 	})
