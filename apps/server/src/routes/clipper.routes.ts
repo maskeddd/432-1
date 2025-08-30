@@ -1,8 +1,8 @@
-import express from "express"
+import express, { type Router } from "express"
 import multer from "multer"
-import { clip } from "../controllers/clipper.controller.ts"
+import { clip } from "../controllers/clipper.controller.js"
 
-const router = express.Router()
+const router: Router = express.Router()
 
 const upload = multer({
 	storage: multer.diskStorage({

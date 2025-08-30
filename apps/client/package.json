@@ -2,6 +2,10 @@
 	"name": "client",
 	"private": true,
 	"type": "module",
+	"files": [
+		"package.json",
+		"build"
+	],
 	"scripts": {
 		"build": "react-router build",
 		"dev": "react-router dev",
@@ -16,7 +20,7 @@
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0",
 		"react-router": "^7.7.1",
-		"@packages/shared": "workspace:*"
+		"shared": "workspace:*"
 	},
 	"devDependencies": {
 		"@react-router/dev": "^7.7.1",

@@ -1,16 +1,20 @@
-FROM oven/bun:1-alpine
+FROM node:22-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 
-WORKDIR /app
+FROM base AS build
+WORKDIR /usr/src/app
+COPY . .
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN pnpm run -r build
+RUN pnpm deploy --filter=client --prod /prod/client
 
-COPY package.json bun.lock ./
-COPY packages/shared/package.json ./packages/shared/
-COPY apps/client/package.json ./apps/client/
+FROM base AS client
+RUN apk add --no-cache ffmpeg
 
-RUN bun install --filter '@apps/client'
+COPY --from=build /prod/client /prod/client
 
-COPY apps/client ./apps/client
-COPY packages/shared ./packages/shared
-
-RUN cd packages/shared && bun run build
-
-ENTRYPOINT ["bun", "run", "dev"]
+WORKDIR /prod/client
+EXPOSE 3000
+CMD ["pnpm", "start"]

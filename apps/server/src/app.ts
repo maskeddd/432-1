@@ -1,15 +1,14 @@
 import cors from "cors"
-import express from "express"
-import { errorHandler } from "./middlewares/errorHandler.middleware.ts"
-import clipperRoutes from "./routes/clipper.routes.ts"
+import express, { type Express } from "express"
+import { errorHandler } from "./middlewares/errorHandler.middleware.js"
+import clipperRoutes from "./routes/clipper.routes.js"
 
-const app = express()
+const app: Express = express()
 
 app.use(
 	cors({
-		origin: "http://localhost:5173",
-		methods: ["GET", "POST", "PUT", "DELETE"],
-		allowedHeaders: ["Content-Type", "Authorization"],
+		origin: process.env.CLIENT_URL || "http://localhost:5173",
+		credentials: true,
 	})
 )
 

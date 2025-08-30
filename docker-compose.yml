@@ -1,0 +1,23 @@
+services:
+  client:
+    container_name: client
+    build:
+      context: .
+      dockerfile: infra/docker/client.Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+    environment:
+      - API_URL=http://localhost:4000
+
+  server:
+    container_name: server
+    build:
+      context: .
+      dockerfile: infra/docker/server.Dockerfile
+    ports:
+      - "4000:3000"
+    environment:
+      - NODE_ENV=production
+      - CLIENT_URL=http://localhost:3000

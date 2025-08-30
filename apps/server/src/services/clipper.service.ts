@@ -1,5 +1,6 @@
+import { spawn } from "node:child_process"
 import { join } from "node:path"
-import type { ClipperOptions, Segment } from "@packages/shared"
+import type { ClipperOptions, Segment } from "shared"
 
 export class ClipperError extends Error {
 	public readonly exitCode: number
@@ -21,21 +22,33 @@ export class ClipperError extends Error {
 }
 
 async function runClipper(args: string[]): Promise<void> {
-	const proc = Bun.spawn(["clipper", ...args], {
-		stdout: "pipe",
-		stderr: "pipe",
+	return new Promise((resolve, reject) => {
+		const proc = spawn("clipper", args)
+
+		let stdout = ""
+		let stderr = ""
+
+		proc.stdout.on("data", (chunk) => {
+			stdout += chunk.toString()
+		})
+
+		proc.stderr.on("data", (chunk) => {
+			stderr += chunk.toString()
+		})
+
+		proc.on("close", (exitCode) => {
+			if (exitCode === 0) {
+				resolve()
+			} else {
+				const message = `Clipper process failed with exit code ${exitCode}.`
+				reject(new ClipperError(message, exitCode ?? -1, stdout, stderr))
+			}
+		})
+
+		proc.on("error", (err) => {
+			reject(err)
+		})
 	})
-
-	const [exitCode, stdout, stderr] = await Promise.all([
-		proc.exited,
-		new Response(proc.stdout).text(),
-		new Response(proc.stderr).text(),
-	])
-
-	if (exitCode !== 0) {
-		const message = `Clipper process failed with exit code ${exitCode}.`
-		throw new ClipperError(message, exitCode, stdout, stderr)
-	}
 }
 
 export async function processVideo(

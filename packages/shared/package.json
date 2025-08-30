@@ -1,5 +1,5 @@
 {
-	"name": "@packages/shared",
+	"name": "shared",
 	"type": "module",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",

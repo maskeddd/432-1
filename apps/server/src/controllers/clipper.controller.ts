@@ -1,16 +1,16 @@
 import { unlink } from "node:fs/promises"
 import { basename } from "node:path"
+import type { NextFunction, Request, Response } from "express"
 import {
 	type ClipperOptions,
 	ClipperOptionsSchema,
 	type Segment,
 	SegmentSchema,
-} from "@packages/shared"
-import type { NextFunction, Request, Response } from "express"
+} from "shared"
 import { z } from "zod"
-import { processVideo } from "../services/clipper.service.ts"
-import { AppError } from "../utils/appError.util.ts"
-import { cleanupTempDir, createTempDir } from "../utils/file.util.ts"
+import { processVideo } from "../services/clipper.service.js"
+import { AppError } from "../utils/appError.util.js"
+import { cleanupTempDir, createTempDir } from "../utils/file.util.js"
 
 export async function clip(req: Request, res: Response, next: NextFunction) {
 	let tempDir: string | null = null

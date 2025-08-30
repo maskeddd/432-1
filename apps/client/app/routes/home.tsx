@@ -1,18 +1,20 @@
+import { Plus, Trash2 } from "lucide-react"
+import type React from "react"
+import { useState } from "react"
 import {
 	type ClipperOptions,
 	ClipperOptionsSchema,
 	type Segment,
 	SegmentSchema,
-} from "@packages/shared"
-import { Plus, Trash2 } from "lucide-react"
-import type React from "react"
-import { useState } from "react"
+} from "shared"
 
 type SegmentWithId = Segment & { id: number; raw: string }
 
 export function meta() {
 	return [{ title: "clipper" }, { name: "description", content: "clipper" }]
 }
+
+const API_URL = process.env.API_URL ?? "http://localhost:4000"
 
 export default function Home() {
 	const [videoUrl, setVideoUrl] = useState<string | null>(null)
@@ -112,7 +114,7 @@ export default function Home() {
 			formData.append("segments", JSON.stringify(parsedSegments))
 			formData.append("options", JSON.stringify(optResult.data))
 
-			const res = await fetch("http://angry_lumiere.orb.local/clip", {
+			const res = await fetch(`${API_URL}/clip`, {
 				method: "POST",
 				body: formData,
 			})

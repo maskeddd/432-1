@@ -4,24 +4,24 @@ WORKDIR /src
 RUN git clone https://github.com/flazepe/clipper.git .
 RUN cargo build --release
 
-FROM oven/bun:1-alpine
+FROM node:22-alpine AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 
-WORKDIR /app
+FROM base AS build
+WORKDIR /usr/src/app
+COPY . .
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN pnpm run -r build
+RUN pnpm deploy --filter=server --prod /prod/server
 
+FROM base AS server
 RUN apk add --no-cache ffmpeg
-COPY --from=rust-builder /src/target/release/clipper /usr/local/bin/clipper
 
-COPY package.json bun.lock ./
-COPY packages/shared/package.json ./packages/shared/
-COPY apps/server/package.json ./apps/server/
+COPY --from=build /prod/server /prod/server
+COPY --from=rust-builder /src/target/release/clipper /bin/clipper
 
-RUN bun install --filter '@apps/server'
-
-COPY apps/server ./apps/server
-COPY packages/shared ./packages/shared
-
-RUN cd packages/shared && bun run build
-
+WORKDIR /prod/server
 EXPOSE 3000
-
-ENTRYPOINT ["bun", "run", "apps/server/src/server.ts"]
+CMD ["pnpm", "start"]
