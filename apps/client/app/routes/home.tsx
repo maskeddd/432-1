@@ -14,7 +14,10 @@ export function meta() {
 	return [{ title: "clipper" }, { name: "description", content: "clipper" }]
 }
 
-const API_URL = process.env.API_URL ?? "http://localhost:4000"
+const API_URL =
+	process.env.VITE_API_URL ??
+	import.meta.env.VITE_API_URL ??
+	"http://localhost:3001"
 
 export default function Home() {
 	const [videoUrl, setVideoUrl] = useState<string | null>(null)
