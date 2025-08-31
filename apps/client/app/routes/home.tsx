@@ -17,7 +17,7 @@ export function meta() {
 const API_URL =
 	process.env.VITE_API_URL ??
 	import.meta.env.VITE_API_URL ??
-	"http://localhost:3001"
+	"http://52.65.115.197:3001"
 
 export default function Home() {
 	const [videoUrl, setVideoUrl] = useState<string | null>(null)
