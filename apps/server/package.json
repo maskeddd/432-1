@@ -12,7 +12,9 @@
 		"start": "node dist/server.js"
 	},
 	"devDependencies": {
-		"@types/bun": "latest"
+		"@types/bun": "latest",
+		"@types/jsonwebtoken": "^9.0.10",
+		"i": "^0.3.7"
 	},
 	"peerDependencies": {
 		"typescript": "^5"
@@ -23,7 +25,10 @@
 		"@types/multer": "^2.0.0",
 		"cors": "^2.8.5",
 		"express": "^5.1.0",
+		"express-jwt": "^8.5.1",
+		"jsonwebtoken": "^9.0.2",
 		"multer": "^2.0.2",
+		"node-fetch": "^3.3.2",
 		"shared": "workspace:*",
 		"strip-ansi": "^7.1.0",
 		"tmp": "^0.2.5",

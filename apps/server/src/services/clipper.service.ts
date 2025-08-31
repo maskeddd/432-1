@@ -52,16 +52,16 @@ async function runClipper(args: string[]): Promise<void> {
 }
 
 export async function processVideo(
-	input: Express.Multer.File,
+	input: Express.Multer.File | string,
 	segments: Segment[],
 	tempDir: string,
 	options: ClipperOptions = {}
 ): Promise<string> {
-	if (!input.path) {
+	const inputPath = typeof input === "string" ? input : input.path
+	if (!inputPath) {
 		throw new Error("No valid input file path provided")
 	}
 
-	const inputPath = input.path
 	const outputPath = join(tempDir, `output-${Date.now()}.mp4`)
 
 	const args: string[] = []
