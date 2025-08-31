@@ -1,9 +1,7 @@
 services:
   client:
     container_name: client
-    build:
-      context: .
-      dockerfile: infra/docker/client.Dockerfile
+    image: 901444280953.dkr.ecr.ap-southeast-2.amazonaws.com/n11558849/clipper-client
     ports:
       - "3000:3000"
     depends_on:
@@ -13,9 +11,7 @@ services:
 
   server:
     container_name: server
-    build:
-      context: .
-      dockerfile: infra/docker/server.Dockerfile
+    image: 901444280953.dkr.ecr.ap-southeast-2.amazonaws.com/n11558849/clipper-server:latest
     ports:
       - "4000:3000"
     environment:
