@@ -2,10 +2,10 @@
 import fetch from "node-fetch"
 
 // Config
-const API_URL = "http://localhost:3000/process"
-const FILENAME = "sample.mov"
-const CONCURRENT_REQUESTS = 5
-const TOTAL_REQUESTS = 50
+const API_URL = "http://52.65.20.64:3001/process"
+const FILENAME = "1756644688476-fakemink - Easter Pink (Prod Suzy Sheer).mp4"
+const CONCURRENT_REQUESTS = 1
+const TOTAL_REQUESTS = 10000
 const TOKEN = null
 
 async function sendRequest(i) {
