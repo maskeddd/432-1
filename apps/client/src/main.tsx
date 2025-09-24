@@ -10,10 +10,9 @@ import AuthRoute from "./routes/auth.tsx"
 import Layout from "./routes/layout.tsx"
 
 const cognitoAuthConfig = {
-	authority:
-		"https://cognito-idp.ap-southeast-2.amazonaws.com/ap-southeast-2_JUC9SbgGm",
-	client_id: "188n87cm03j4saf9n20gjijpaj",
-	redirect_uri: "http://localhost:5173",
+	authority: import.meta.env.VITE_COGNITO_AUTHORITY,
+	client_id: import.meta.env.VITE_COGNITO_CLIENT_ID,
+	redirect_uri: import.meta.env.VITE_COGNITO_REDIRECT_URI,
 	response_type: "code",
 	scope: "phone openid email profile",
 	userStore: new WebStorageStateStore({ store: window.localStorage }),

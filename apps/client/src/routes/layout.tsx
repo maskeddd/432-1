@@ -5,10 +5,9 @@ export default function Layout() {
 	const auth = useAuth()
 
 	const signOutRedirect = () => {
-		const clientId = "188n87cm03j4saf9n20gjijpaj"
+		const clientId = import.meta.env.VITE_COGNITO_CLIENT_ID
 		const logoutUri = window.location.origin
-		const cognitoDomain =
-			"https://ap-southeast-2juc9sbggm.auth.ap-southeast-2.amazoncognito.com"
+		const cognitoDomain = import.meta.env.VITE_COGNITO_DOMAIN
 
 		auth.removeUser()
 		window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
