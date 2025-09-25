@@ -94,6 +94,9 @@ importers:
       '@types/multer':
         specifier: ^2.0.0
         version: 2.0.0
+      aws-jwt-verify:
+        specifier: ^5.1.0
+        version: 5.1.0
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -900,6 +903,10 @@ packages:
 
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
+
+  aws-jwt-verify@5.1.0:
+    resolution: {integrity: sha512-98ioOBMyrLU5jW5rPvkJo20XlNB2rAX3tZR3BM6AamfBkOoSRLV1EyGkbgHQzgFOWyQ7yV8+tce6M24rOpMkgw==}
+    engines: {node: '>=18.0.0'}
 
   babel-plugin-react-compiler@19.1.0-rc.3:
     resolution: {integrity: sha512-mjRn69WuTz4adL0bXGx8Rsyk1086zFJeKmes6aK0xPuK3aaXmDJdLHqwKKMrpm6KAI1MCoUK72d2VeqQbu8YIA==}
@@ -2667,6 +2674,8 @@ snapshots:
   append-field@1.0.0: {}
 
   argparse@2.0.1: {}
+
+  aws-jwt-verify@5.1.0: {}
 
   babel-plugin-react-compiler@19.1.0-rc.3:
     dependencies:

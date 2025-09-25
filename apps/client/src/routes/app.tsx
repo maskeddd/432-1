@@ -1,5 +1,6 @@
 import { Plus, Trash2 } from "lucide-react"
 import { useState } from "react"
+import { useAuth } from "react-oidc-context"
 import {
 	type ClipperOptions,
 	ClipperOptionsSchema,
@@ -19,6 +20,8 @@ export default function App() {
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 	const [success, setSuccess] = useState<string | null>(null)
+
+	const auth = useAuth()
 
 	function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
 		const file = e.target.files?.[0]
@@ -112,6 +115,9 @@ export default function App() {
 			const res = await fetch(`${API_URL}/clip`, {
 				method: "POST",
 				body: formData,
+				headers: {
+					Authorization: `Bearer ${auth.user?.access_token}`,
+				},
 			})
 
 			if (!res.ok) {

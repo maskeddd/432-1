@@ -4,7 +4,7 @@ import { ClipperError } from "../services/clipper.service.js"
 import { AppError } from "../utils/appError.util.js"
 
 export function errorHandler(
-	err: any,
+	err: unknown,
 	_req: Request,
 	res: Response,
 	_next: NextFunction
@@ -12,27 +12,31 @@ export function errorHandler(
 	console.error("Error:", err)
 
 	if (err instanceof ClipperError) {
-		const errorMessage = err.stderr
-			? stripAnsi(err.stderr)
-			: stripAnsi(err.stdout)
+		const clipperOutput = err.stderr || err.stdout
+		const errorMessage = clipperOutput
+			? stripAnsi(clipperOutput)
+			: "No output from clipper"
 
 		return res.status(500).json({
 			error: "Video processing failed",
 			details: err.message,
-			clipper_error: errorMessage || "No output from clipper",
+			clipper_error: errorMessage,
 			exit_code: err.exitCode,
 		})
 	}
 
 	if (err instanceof AppError) {
-		return res.status(err.statusCode).json({
-			error: err.message,
-			details: err.details,
-		})
+		const response: { error: string; details?: string } = { error: err.message }
+
+		if (err.details) {
+			response.details = err.details
+		}
+
+		return res.status(err.statusCode).json(response)
 	}
 
 	return res.status(500).json({
-		error: "Unexpected server error",
-		details: err instanceof Error ? err.message : "Unknown error",
+		error: "Internal server error",
+		details: err instanceof Error ? err.message : String(err),
 	})
 }

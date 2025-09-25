@@ -1,7 +1,6 @@
 import cors from "cors"
 import express, { type Express } from "express"
 import { errorHandler } from "./middlewares/errorHandler.middleware.js"
-import authRoutes from "./routes/auth.routes.js"
 import clipperRoutes from "./routes/clipper.routes.js"
 import jobsRoutes from "./routes/jobs.routes.js"
 
@@ -18,7 +17,6 @@ app.use(
 
 app.use("/", clipperRoutes)
 app.use("/jobs", jobsRoutes)
-app.use("/auth", authRoutes)
 
 app.use(errorHandler)
 
