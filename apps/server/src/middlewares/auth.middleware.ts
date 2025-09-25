@@ -2,9 +2,18 @@ import { CognitoJwtVerifier } from "aws-jwt-verify"
 import type { NextFunction, Request, Response } from "express"
 import { AppError } from "../utils/appError.util.js"
 
+const userPoolId = process.env.COGNITO_USER_POOL_ID
+const clientId = process.env.COGNITO_CLIENT_ID
+
+if (!userPoolId || !clientId) {
+	throw new Error(
+		"Missing required environment variables: COGNITO_USER_POOL_ID and COGNITO_CLIENT_ID"
+	)
+}
+
 const verifier = CognitoJwtVerifier.create({
-	userPoolId: "ap-southeast-2_JUC9SbgGm",
-	clientId: "188n87cm03j4saf9n20gjijpaj",
+	userPoolId,
+	clientId,
 	tokenUse: "access",
 })
 

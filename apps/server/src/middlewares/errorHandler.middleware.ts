@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express"
 import stripAnsi from "strip-ansi"
-import { ClipperError } from "../services/clipper.service.js"
 import { AppError } from "../utils/appError.util.js"
+import { ClipperError } from "../utils/clipperError.util.js"
 
 export function errorHandler(
 	err: unknown,

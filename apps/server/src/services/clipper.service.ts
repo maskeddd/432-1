@@ -2,25 +2,7 @@ import { spawn } from "node:child_process"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import type { ClipperOptions, Segment } from "shared"
-
-export class ClipperError extends Error {
-	public readonly exitCode: number
-	public readonly stdout: string
-	public readonly stderr: string
-
-	constructor(
-		message: string,
-		exitCode: number,
-		stdout: string,
-		stderr: string
-	) {
-		super(message)
-		this.name = "ClipperError"
-		this.exitCode = exitCode
-		this.stdout = stdout
-		this.stderr = stderr
-	}
-}
+import { ClipperError } from "../utils/clipperError.util.js"
 
 const getClipperPath = () => {
 	const projectRoot = join(
