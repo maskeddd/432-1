@@ -20,6 +20,8 @@
 		"typescript": "^5"
 	},
 	"dependencies": {
+		"@aws-sdk/client-dynamodb": "^3.896.0",
+		"@aws-sdk/lib-dynamodb": "^3.896.0",
 		"@types/cors": "^2.8.19",
 		"@types/express": "^5.0.3",
 		"@types/multer": "^2.0.0",
