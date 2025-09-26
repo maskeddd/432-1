@@ -1,49 +1,34 @@
-import { readFile, writeFile } from "node:fs/promises"
+// apps/server/src/data/jobs.store.ts
 import type { Job } from "../types/job"
+import {
+  putJobItem,
+  getJobItem,
+  queryAllJobs,
+  queryJobsByUser,
+  updateJobFields,
+} from "../services/dynamodb.service.js"
 
-const JOBS_FILE = "./jobs.json"
-
-async function loadJobs(): Promise<Job[]> {
-	try {
-		const data = await readFile(JOBS_FILE, "utf-8")
-		return JSON.parse(data) as Job[]
-	} catch {
-		return []
-	}
-}
-
-async function saveJobs(jobs: Job[]): Promise<void> {
-	await writeFile(JOBS_FILE, JSON.stringify(jobs, null, 2))
-}
-
+/** Add a new job (used by clipper flow) */
 export async function addJob(job: Job): Promise<void> {
-	const jobs = await loadJobs()
-	jobs.push(job)
-	await saveJobs(jobs)
+  await putJobItem(job)
 }
 
-export async function updateJob(
-	jobId: string,
-	updates: Partial<Job>
-): Promise<void> {
-	const jobs = await loadJobs()
-	const index = jobs.findIndex((j) => j.jobId === jobId)
-	if (index !== -1) {
-		jobs[index] = { ...jobs[index], ...updates } as Job
-		await saveJobs(jobs)
-	}
+/** Update an existing job with partial fields */
+export async function updateJob(jobId: string, updates: Partial<Job>): Promise<Job> {
+  return updateJobFields(jobId, updates)
 }
 
+/** Get one job by ID */
 export async function getJobById(jobId: string): Promise<Job | undefined> {
-	const jobs = await loadJobs()
-	return jobs.find((j) => j.jobId === jobId)
+  return getJobItem(jobId)
 }
 
+/** Get jobs owned by a logical user (your app's `job.user`) */
 export async function getJobsByUser(username: string): Promise<Job[]> {
-	const jobs = await loadJobs()
-	return jobs.filter((j) => j.user === username)
+  return queryJobsByUser(username)
 }
 
+/** Get all jobs in the partition (admin/overview) */
 export async function getAllJobs(): Promise<Job[]> {
-	return loadJobs()
+  return queryAllJobs()
 }
