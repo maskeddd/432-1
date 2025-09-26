@@ -71,9 +71,9 @@ export async function putJobItem(job: Job) {
   const command = new PutCommand({
     TableName: TABLE_NAME,
     Item: {
-      "qut-username": QUT_USERNAME,
-      [SORT_KEY]: job.jobId,
-      ...job, // includes: user, status, inputFile, outputFile?, createdAt
+        "qut-username": QUT_USERNAME,
+        ...job,
+        [SORT_KEY]: job.jobId, 
     },
   })
   await docClient.send(command)
