@@ -1,12 +1,11 @@
-import type { Response } from "express"
-import type { Request as JWTRequest } from "express-jwt"
+import type { Request, Response } from "express"
 import {
 	getJobItem,
 	queryAllJobs,
 	queryJobsByUser,
 } from "../services/dynamodb.service.js"
 
-export async function getJob(req: JWTRequest, res: Response) {
+export async function getJob(req: Request, res: Response) {
 	const jobId = req.params.id
 
 	if (!jobId) {
@@ -18,21 +17,27 @@ export async function getJob(req: JWTRequest, res: Response) {
 		return res.status(404).json({ error: "Job not found" })
 	}
 
-	if (req.auth?.role !== "admin" && job.user !== req.auth?.username) {
+	if (
+		!res.locals.user.groups.includes("Administrator") &&
+		job.user !== res.locals.user.id
+	) {
 		return res.status(403).json({ error: "Forbidden" })
 	}
 
 	res.json(job)
 }
 
-export async function getUserJobs(req: JWTRequest, res: Response) {
+export async function getUserJobs(req: Request, res: Response) {
 	const username = req.params.username
 
 	if (!username) {
 		return res.status(400).json({ error: "Missing username parameter" })
 	}
 
-	if (req.auth?.role !== "admin" && req.auth?.username !== username) {
+	if (
+		!res.locals.user.groups.includes("Administrator") &&
+		username !== res.locals.user.id
+	) {
 		return res.status(403).json({ error: "Forbidden" })
 	}
 
@@ -40,8 +45,8 @@ export async function getUserJobs(req: JWTRequest, res: Response) {
 	res.json(jobs)
 }
 
-export async function getAllJobsController(req: JWTRequest, res: Response) {
-	if (req.auth?.role !== "admin") {
+export async function getAllJobsController(_: Request, res: Response) {
+	if (!res.locals.user.groups.includes("Administrator")) {
 		return res.status(403).json({ error: "Forbidden" })
 	}
 

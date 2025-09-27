@@ -1,7 +1,6 @@
 import { unlink } from "node:fs/promises"
 import { basename } from "node:path"
-import type { NextFunction, Response } from "express"
-import type { Request as JWTRequest } from "express-jwt"
+import type { NextFunction, Request, Response } from "express"
 import { ClipperOptionsSchema, SegmentSchema } from "shared"
 import { z } from "zod"
 import { processVideo } from "../services/clipper.service.js"
@@ -42,7 +41,7 @@ async function cleanupFiles(tempDir: string | null, inputFilePath?: string) {
 	}
 }
 
-export async function clip(req: JWTRequest, res: Response, next: NextFunction) {
+export async function clip(req: Request, res: Response, next: NextFunction) {
 	let tempDir: string | null = null
 
 	try {

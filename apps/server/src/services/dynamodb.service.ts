@@ -15,15 +15,15 @@ import {
 import type { Job } from "../types/job"
 
 // Configuration
-const REGION = process.env.AWS_REGION ?? "ap-southeast-2"
-const QUT_USERNAME = process.env.QUT_USERNAME
+const REGION = process.env.AWS_REGION || "ap-southeast-2"
+const QUT_USERNAME = `${process.env.QUT_USERNAME}@qut.edu.au`
 
 if (!QUT_USERNAME) {
 	throw new Error("Missing QUT_USERNAME env var")
 }
 
 const TABLE_NAME =
-	process.env.DDB_TABLE_NAME ?? `${QUT_USERNAME.split("@")[0]}-jobs`
+	process.env.DDB_TABLE_NAME ?? `${process.env.QUT_USERNAME}-jobs`
 const PARTITION_KEY = "qut-username"
 const SORT_KEY = "jobId"
 

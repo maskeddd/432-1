@@ -43,6 +43,7 @@ export const verifyJWT = async (
 
 		res.locals.user = {
 			id: payload.sub,
+			groups: payload["cognito:groups"],
 		}
 
 		next()
