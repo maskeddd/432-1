@@ -4,8 +4,8 @@ import type { NextFunction, Response } from "express"
 import type { Request as JWTRequest } from "express-jwt"
 import { ClipperOptionsSchema, SegmentSchema } from "shared"
 import { z } from "zod"
-import { addJob, updateJob } from "../data/jobs.store.js"
 import { processVideo } from "../services/clipper.service.js"
+import { putJobItem, updateJobFields } from "../services/dynamodb.service.js"
 import type { Job } from "../types/job"
 import { AppError } from "../utils/appError.util.js"
 import { cleanupTempDir, createTempDir } from "../utils/file.util.js"
@@ -63,10 +63,10 @@ export async function clip(req: JWTRequest, res: Response, next: NextFunction) {
 			createdAt: new Date().toISOString(),
 		}
 
-		await addJob(job)
+		await putJobItem(job)
 		const outputPath = await processVideo(req.file, segments, tempDir, options)
 
-		await updateJob(jobId, {
+		await updateJobFields(jobId, {
 			status: "completed",
 			outputFile: basename(outputPath),
 		})

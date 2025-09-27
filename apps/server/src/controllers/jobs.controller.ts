@@ -1,6 +1,10 @@
 import type { Response } from "express"
 import type { Request as JWTRequest } from "express-jwt"
-import { getAllJobs, getJobById, getJobsByUser } from "../data/jobs.store.js"
+import {
+	getJobItem,
+	queryAllJobs,
+	queryJobsByUser,
+} from "../services/dynamodb.service.js"
 
 export async function getJob(req: JWTRequest, res: Response) {
 	const jobId = req.params.id
@@ -9,7 +13,7 @@ export async function getJob(req: JWTRequest, res: Response) {
 		return res.status(400).json({ error: "Missing jobId parameter" })
 	}
 
-	const job = await getJobById(jobId)
+	const job = await getJobItem(jobId)
 	if (!job) {
 		return res.status(404).json({ error: "Job not found" })
 	}
@@ -32,7 +36,7 @@ export async function getUserJobs(req: JWTRequest, res: Response) {
 		return res.status(403).json({ error: "Forbidden" })
 	}
 
-	const jobs = await getJobsByUser(username)
+	const jobs = await queryJobsByUser(username)
 	res.json(jobs)
 }
 
@@ -41,6 +45,6 @@ export async function getAllJobsController(req: JWTRequest, res: Response) {
 		return res.status(403).json({ error: "Forbidden" })
 	}
 
-	const jobs = await getAllJobs()
+	const jobs = await queryAllJobs()
 	res.json(jobs)
 }
