@@ -3,6 +3,7 @@ import {
 	CreateTableCommand,
 	DescribeTableCommand,
 	DynamoDBClient,
+	ResourceInUseException,
 } from "@aws-sdk/client-dynamodb"
 import {
 	DynamoDBDocumentClient,
@@ -13,46 +14,50 @@ import {
 } from "@aws-sdk/lib-dynamodb"
 import type { Job } from "../types/job"
 
+// Configuration
 const REGION = process.env.AWS_REGION ?? "ap-southeast-2"
 const QUT_USERNAME = process.env.QUT_USERNAME
+
 if (!QUT_USERNAME) {
 	throw new Error("Missing QUT_USERNAME env var")
 }
 
 const TABLE_NAME =
 	process.env.DDB_TABLE_NAME ?? `${QUT_USERNAME.split("@")[0]}-jobs`
+const PARTITION_KEY = "qut-username"
 const SORT_KEY = "jobId"
 
+// DynamoDB clients
 const client = new DynamoDBClient({ region: REGION })
 const docClient = DynamoDBDocumentClient.from(client)
 
-//Ensure the jobs table exists.
-
+/** Ensure the jobs table exists */
 export async function ensureJobsTable(): Promise<void> {
 	try {
 		await client.send(new DescribeTableCommand({ TableName: TABLE_NAME }))
-
 		return
-	} catch {}
+	} catch {
+		// Table doesn't exist, create it
+	}
 
-	const create = new CreateTableCommand({
+	const createCommand = new CreateTableCommand({
 		TableName: TABLE_NAME,
 		AttributeDefinitions: [
-			{ AttributeName: "qut-username", AttributeType: "S" },
+			{ AttributeName: PARTITION_KEY, AttributeType: "S" },
 			{ AttributeName: SORT_KEY, AttributeType: "S" },
 		],
 		KeySchema: [
-			{ AttributeName: "qut-username", KeyType: "HASH" },
+			{ AttributeName: PARTITION_KEY, KeyType: "HASH" },
 			{ AttributeName: SORT_KEY, KeyType: "RANGE" },
 		],
 		ProvisionedThroughput: { ReadCapacityUnits: 1, WriteCapacityUnits: 1 },
 	})
 
 	try {
-		await client.send(create)
+		await client.send(createCommand)
 		console.log(`[DDB] Created table: ${TABLE_NAME}`)
-	} catch (err: any) {
-		if (err?.name === "ResourceInUseException") {
+	} catch (err) {
+		if (err instanceof ResourceInUseException) {
 			console.log(`[DDB] Table already exists: ${TABLE_NAME}`)
 		} else {
 			console.error("[DDB] Error creating table:", err)
@@ -62,17 +67,20 @@ export async function ensureJobsTable(): Promise<void> {
 }
 
 /** Create/replace a job item */
-export async function putJobItem(job: Job) {
-	// Enforce required keys
-	if (!job?.jobId) throw new Error("putJobItem: job.jobId is required")
+export async function putJobItem(job: Job): Promise<void> {
+	if (!job?.jobId) {
+		throw new Error("putJobItem: job.jobId is required")
+	}
+
 	const command = new PutCommand({
 		TableName: TABLE_NAME,
 		Item: {
-			"qut-username": QUT_USERNAME,
+			[PARTITION_KEY]: QUT_USERNAME,
 			...job,
 			[SORT_KEY]: job.jobId,
 		},
 	})
+
 	await docClient.send(command)
 }
 
@@ -81,35 +89,36 @@ export async function getJobItem(jobId: string): Promise<Job | undefined> {
 	const command = new GetCommand({
 		TableName: TABLE_NAME,
 		Key: {
-			"qut-username": QUT_USERNAME,
+			[PARTITION_KEY]: QUT_USERNAME,
 			[SORT_KEY]: jobId,
 		},
 	})
+
 	const res = await docClient.send(command)
-	return (res.Item as Job | undefined) ?? undefined
+	return res.Item as Job | undefined
 }
 
-/** List *all* jobs in your partition (for admin screens / overviews) */
+/** List all jobs in your partition */
 export async function queryAllJobs(): Promise<Job[]> {
-	// Query with only the partition key returns all items in that partition
 	const command = new QueryCommand({
 		TableName: TABLE_NAME,
 		KeyConditionExpression: "#pk = :username",
-		ExpressionAttributeNames: { "#pk": "qut-username" },
+		ExpressionAttributeNames: { "#pk": PARTITION_KEY },
 		ExpressionAttributeValues: { ":username": QUT_USERNAME },
 	})
+
 	const res = await docClient.send(command)
 	return (res.Items as Job[]) ?? []
 }
 
-/** List jobs for a specific `job.user` (your app's logical username) */
+/** List jobs for a specific user */
 export async function queryJobsByUser(username: string): Promise<Job[]> {
 	const command = new QueryCommand({
 		TableName: TABLE_NAME,
 		KeyConditionExpression: "#pk = :username",
 		FilterExpression: "#user = :u",
 		ExpressionAttributeNames: {
-			"#pk": "qut-username",
+			"#pk": PARTITION_KEY,
 			"#user": "user",
 		},
 		ExpressionAttributeValues: {
@@ -117,49 +126,46 @@ export async function queryJobsByUser(username: string): Promise<Job[]> {
 			":u": username,
 		},
 	})
+
 	const res = await docClient.send(command)
 	return (res.Items as Job[]) ?? []
 }
 
-/** Patch specific fields of a job (status, outputFile, etc.) */
+/** Update specific fields of a job */
 export async function updateJobFields(
 	jobId: string,
 	fields: Partial<
 		Pick<Job, "status" | "outputFile" | "user" | "createdAt" | "inputFile">
 	>
 ): Promise<Job> {
-	const clean = { ...fields }
-	// Never allow changing keys
-	delete (clean as any)["qut-username"]
-	delete (clean as any)["jobId"]
+	// Filter out key fields that shouldn't be updated
+	const updateableFields = { ...fields }
+	delete updateableFields[PARTITION_KEY as keyof typeof updateableFields]
+	delete updateableFields[SORT_KEY as keyof typeof updateableFields]
 
-	const entries = Object.entries(clean)
+	const entries = Object.entries(updateableFields)
+
 	if (entries.length === 0) {
 		const current = await getJobItem(jobId)
-		if (!current) throw new Error("updateJobFields: job not found")
+		if (!current) {
+			throw new Error("updateJobFields: job not found")
+		}
 		return current
 	}
-
-	const UpdateExpression =
-		"SET " + entries.map(([, _v], i) => `#k${i} = :v${i}`).join(", ")
-
-	const ExpressionAttributeNames = Object.fromEntries(
-		entries.map(([k], i) => [`#k${i}`, k])
-	)
-
-	const ExpressionAttributeValues = Object.fromEntries(
-		entries.map(([_, v], i) => [`:v${i}`, v])
-	)
 
 	const command = new UpdateCommand({
 		TableName: TABLE_NAME,
 		Key: {
-			"qut-username": QUT_USERNAME,
+			[PARTITION_KEY]: QUT_USERNAME,
 			[SORT_KEY]: jobId,
 		},
-		UpdateExpression,
-		ExpressionAttributeNames,
-		ExpressionAttributeValues,
+		UpdateExpression: `SET ${entries.map((_, i) => `#k${i} = :v${i}`).join(", ")}`,
+		ExpressionAttributeNames: Object.fromEntries(
+			entries.map(([key], i) => [`#k${i}`, key])
+		),
+		ExpressionAttributeValues: Object.fromEntries(
+			entries.map(([_, value], i) => [`:v${i}`, value])
+		),
 		ReturnValues: "ALL_NEW",
 	})
 
