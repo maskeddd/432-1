@@ -26,13 +26,28 @@ export default function Layout() {
 					</div>
 					<div className="flex-none">
 						{auth.isAuthenticated ? (
-							<button
-								type="button"
-								className="btn btn-ghost"
-								onClick={signOutRedirect}
-							>
-								{auth.user?.profile.preferred_username || "log out"}
-							</button>
+							<div className="dropdown dropdown-end">
+								<button
+									tabIndex={0}
+									type="button"
+									className="btn btn-ghost rounded-field"
+								>
+									{auth.user?.profile.preferred_username}
+								</button>
+								<ul
+									tabIndex={0}
+									className="menu dropdown-content bg-base-200 rounded-box z-1 mt-4 w-52 p-2 shadow-sm"
+								>
+									<li className="menu-disabled">
+										<p>{auth.user?.profile.email}</p>
+									</li>
+									<li>
+										<button type="button" onClick={signOutRedirect}>
+											logout
+										</button>
+									</li>
+								</ul>
+							</div>
 						) : (
 							<button
 								type="button"
