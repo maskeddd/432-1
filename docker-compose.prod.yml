@@ -1,7 +1,7 @@
 services:
   client:
     container_name: client
-    image: 901444280953.dkr.ecr.ap-southeast-2.amazonaws.com/n11558849/clipper-client
+    image: 901444280953.dkr.ecr.ap-southeast-2.amazonaws.com/group83/client:latest
     ports:
       - "5173:5173"
     depends_on:
@@ -11,7 +11,7 @@ services:
 
   server:
     container_name: server
-    image: 901444280953.dkr.ecr.ap-southeast-2.amazonaws.com/n11558849/clipper-server:latest
+    image: 901444280953.dkr.ecr.ap-southeast-2.amazonaws.com/group83/server:latest
     ports:
       - "3000:3000"
     env_file:
