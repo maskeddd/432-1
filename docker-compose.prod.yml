@@ -8,7 +8,7 @@ services:
       - "--entrypoints.websecure.address=:443"
 
       # Let's Encrypt with Route53 DNS challenge
-      - "--certificatesresolvers.myresolver.acme.email=your-email@example.com"
+      - "--certificatesresolvers.myresolver.acme.email=n11558849@qut.edu.au"
       - "--certificatesresolvers.myresolver.acme.storage=acme.json"
       - "--certificatesresolvers.myresolver.acme.dnschallenge=true"
       - "--certificatesresolvers.myresolver.acme.dnschallenge.provider=route53"
