@@ -7,7 +7,11 @@ services:
     depends_on:
       - server
     environment:
-      - API_URL=http://localhost:3001
+      - VITE_COGNITO_AUTHORITY=${COGNITO_AUTHORITY}
+      - VITE_COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID}
+      - VITE_COGNITO_REDIRECT_URI=${COGNITO_REDIRECT_URI}
+      - VITE_COGNITO_DOMAIN=${COGNITO_DOMAIN}
+      - VITE_API_URL=${API_URL}
 
   server:
     container_name: server
@@ -16,4 +20,3 @@ services:
       - "3001:3000"
     environment:
       - NODE_ENV=production
-      - CLIENT_URL=http://localhost:3000
