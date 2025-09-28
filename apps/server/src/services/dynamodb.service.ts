@@ -12,56 +12,71 @@ import {
 	QueryCommand,
 	UpdateCommand,
 } from "@aws-sdk/lib-dynamodb"
+import { getParameters } from "shared"
 import type { Job } from "../types/job"
 
-// Configuration
-const REGION = process.env.AWS_REGION || "ap-southeast-2"
-const QUT_USERNAME = `${process.env.QUT_USERNAME}@qut.edu.au`
-
-if (!QUT_USERNAME) {
-	throw new Error("Missing QUT_USERNAME env var")
-}
-
-const TABLE_NAME =
-	process.env.DDB_TABLE_NAME ?? `${process.env.QUT_USERNAME}-jobs`
 const PARTITION_KEY = "qut-username"
 const SORT_KEY = "jobId"
 
-// DynamoDB clients
-const client = new DynamoDBClient({ region: REGION })
-const docClient = DynamoDBDocumentClient.from(client)
+let qutUsername: string
+let tableName: string
+
+let client: DynamoDBClient
+let docClient: DynamoDBDocumentClient
+
+export async function initDynamoDB() {
+	const { qutUsername: qut, tableName: table } = await getParameters({
+		qutUsername: "/group83/qutUsername",
+		tableName: "/group83/dynamodb/tableName",
+	})
+
+	if (!qut || !table) {
+		throw new Error("Missing qutUsername or tableName in Parameter Store")
+	}
+
+	qutUsername = qut
+	tableName = table
+
+	client = new DynamoDBClient({ region: "ap-southeast-2" })
+	docClient = DynamoDBDocumentClient.from(client)
+}
 
 /** Ensure the jobs table exists */
 export async function ensureJobsTable(): Promise<void> {
 	try {
-		await client.send(new DescribeTableCommand({ TableName: TABLE_NAME }))
-		return
-	} catch {
-		// Table doesn't exist, create it
-	}
-
-	const createCommand = new CreateTableCommand({
-		TableName: TABLE_NAME,
-		AttributeDefinitions: [
-			{ AttributeName: PARTITION_KEY, AttributeType: "S" },
-			{ AttributeName: SORT_KEY, AttributeType: "S" },
-		],
-		KeySchema: [
-			{ AttributeName: PARTITION_KEY, KeyType: "HASH" },
-			{ AttributeName: SORT_KEY, KeyType: "RANGE" },
-		],
-		ProvisionedThroughput: { ReadCapacityUnits: 1, WriteCapacityUnits: 1 },
-	})
-
-	try {
-		await client.send(createCommand)
-		console.log(`[DDB] Created table: ${TABLE_NAME}`)
+		await client.send(new DescribeTableCommand({ TableName: tableName }))
 	} catch (err) {
-		if (err instanceof ResourceInUseException) {
-			console.log(`[DDB] Table already exists: ${TABLE_NAME}`)
-		} else {
-			console.error("[DDB] Error creating table:", err)
+		if (err instanceof Error && err.name !== "ResourceNotFoundException") {
 			throw err
+		}
+
+		try {
+			await client.send(
+				new CreateTableCommand({
+					TableName: tableName,
+					AttributeDefinitions: [
+						{ AttributeName: PARTITION_KEY, AttributeType: "S" },
+						{ AttributeName: SORT_KEY, AttributeType: "S" },
+					],
+					KeySchema: [
+						{ AttributeName: PARTITION_KEY, KeyType: "HASH" },
+						{ AttributeName: SORT_KEY, KeyType: "RANGE" },
+					],
+					ProvisionedThroughput: {
+						ReadCapacityUnits: 1,
+						WriteCapacityUnits: 1,
+					},
+				})
+			)
+		} catch (createErr) {
+			if (
+				!(
+					createErr instanceof Error &&
+					createErr.name === "ResourceInUseException"
+				)
+			) {
+				throw createErr
+			}
 		}
 	}
 }
@@ -73,9 +88,9 @@ export async function putJobItem(job: Job): Promise<void> {
 	}
 
 	const command = new PutCommand({
-		TableName: TABLE_NAME,
+		TableName: tableName,
 		Item: {
-			[PARTITION_KEY]: QUT_USERNAME,
+			[PARTITION_KEY]: qutUsername,
 			...job,
 			[SORT_KEY]: job.jobId,
 		},
@@ -87,9 +102,9 @@ export async function putJobItem(job: Job): Promise<void> {
 /** Fetch a job by jobId */
 export async function getJobItem(jobId: string): Promise<Job | undefined> {
 	const command = new GetCommand({
-		TableName: TABLE_NAME,
+		TableName: tableName,
 		Key: {
-			[PARTITION_KEY]: QUT_USERNAME,
+			[PARTITION_KEY]: qutUsername,
 			[SORT_KEY]: jobId,
 		},
 	})
@@ -101,10 +116,10 @@ export async function getJobItem(jobId: string): Promise<Job | undefined> {
 /** List all jobs in your partition */
 export async function queryAllJobs(): Promise<Job[]> {
 	const command = new QueryCommand({
-		TableName: TABLE_NAME,
+		TableName: tableName,
 		KeyConditionExpression: "#pk = :username",
 		ExpressionAttributeNames: { "#pk": PARTITION_KEY },
-		ExpressionAttributeValues: { ":username": QUT_USERNAME },
+		ExpressionAttributeValues: { ":username": qutUsername },
 	})
 
 	const res = await docClient.send(command)
@@ -114,7 +129,7 @@ export async function queryAllJobs(): Promise<Job[]> {
 /** List jobs for a specific user */
 export async function queryJobsByUser(username: string): Promise<Job[]> {
 	const command = new QueryCommand({
-		TableName: TABLE_NAME,
+		TableName: tableName,
 		KeyConditionExpression: "#pk = :username",
 		FilterExpression: "#user = :u",
 		ExpressionAttributeNames: {
@@ -122,7 +137,7 @@ export async function queryJobsByUser(username: string): Promise<Job[]> {
 			"#user": "user",
 		},
 		ExpressionAttributeValues: {
-			":username": QUT_USERNAME,
+			":username": qutUsername,
 			":u": username,
 		},
 	})
@@ -154,9 +169,9 @@ export async function updateJobFields(
 	}
 
 	const command = new UpdateCommand({
-		TableName: TABLE_NAME,
+		TableName: tableName,
 		Key: {
-			[PARTITION_KEY]: QUT_USERNAME,
+			[PARTITION_KEY]: qutUsername,
 			[SORT_KEY]: jobId,
 		},
 		UpdateExpression: `SET ${entries.map((_, i) => `#k${i} = :v${i}`).join(", ")}`,

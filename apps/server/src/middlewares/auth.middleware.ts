@@ -1,21 +1,30 @@
 import { CognitoJwtVerifier } from "aws-jwt-verify"
 import type { NextFunction, Request, Response } from "express"
+import { getParameters } from "shared"
 import { AppError } from "../utils/appError.util.js"
 
-const userPoolId = process.env.COGNITO_USER_POOL_ID
-const clientId = process.env.COGNITO_CLIENT_ID
+let verifier: ReturnType<typeof CognitoJwtVerifier.create>
 
-if (!userPoolId || !clientId) {
-	throw new Error(
-		"Missing required environment variables: COGNITO_USER_POOL_ID and COGNITO_CLIENT_ID"
-	)
+export async function initCognito() {
+	const { userPoolId, clientId } = await getParameters({
+		userPoolId: "/group83/cognito/userPoolId",
+		clientId: "/group83/cognito/clientId",
+	})
+
+	if (!userPoolId || !clientId) {
+		throw new Error(
+			"Missing required parameters: cognito/userPoolId and cognito/clientId"
+		)
+	}
+
+	verifier = CognitoJwtVerifier.create({
+		userPoolId,
+		clientId,
+		tokenUse: "access",
+	})
+
+	await verifier.hydrate()
 }
-
-const verifier = CognitoJwtVerifier.create({
-	userPoolId,
-	clientId,
-	tokenUse: "access",
-})
 
 export const verifyJWT = async (
 	req: Request,

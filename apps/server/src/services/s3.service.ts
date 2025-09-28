@@ -7,13 +7,29 @@ import {
 	S3Client,
 } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
+import { getParameters } from "shared"
 
-const bucketName = process.env.S3_BUCKET_NAME || ""
-const region = process.env.AWS_REGION || "ap-southeast-2"
+let s3: S3Client
+let bucketName: string
+let qutUsername: string
 
-const s3 = new S3Client({ region })
+export async function initS3() {
+	const { bucket, qutUsername: qut } = await getParameters({
+		bucket: "/group83/s3/bucketName",
+		qutUsername: "/group83/qutUsername",
+	})
 
-async function ensureBucketExists(): Promise<void> {
+	if (!bucket || !qut) {
+		throw new Error("Missing required S3 config values in Parameter Store")
+	}
+
+	bucketName = bucket
+	qutUsername = qut
+
+	s3 = new S3Client({ region: "ap-southeast-2" })
+}
+
+export async function ensureBucketExists(): Promise<void> {
 	try {
 		await s3.send(new HeadBucketCommand({ Bucket: bucketName }))
 	} catch {
@@ -27,7 +43,7 @@ async function ensureBucketExists(): Promise<void> {
 			Bucket: bucketName,
 			Tagging: {
 				TagSet: [
-					{ Key: "qut-username", Value: process.env.QUT_USERNAME },
+					{ Key: "qut-username", Value: qutUsername },
 					{ Key: "purpose", Value: "assignment-2" },
 				],
 			},
@@ -42,8 +58,6 @@ export async function uploadToS3(
 	key: string,
 	contentType: string
 ) {
-	await ensureBucketExists()
-
 	const command = new PutObjectCommand({
 		Bucket: bucketName,
 		Key: key,

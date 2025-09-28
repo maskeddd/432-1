@@ -1,16 +1,22 @@
 import app from "./app.js"
-import { ensureJobsTable } from "./services/dynamodb.service.js"
+import { initCognito } from "./middlewares/auth.middleware.js"
+import { ensureJobsTable, initDynamoDB } from "./services/dynamodb.service.js"
+import { ensureBucketExists, initS3 } from "./services/s3.service.js"
 
 const port = 3000
 
-// Ensure the DDB table exists, then start the server
-ensureJobsTable()
-	.catch((e) => {
-		console.error("Failed to ensure DynamoDB table:", e)
-		process.exit(1)
+async function start() {
+	await initCognito()
+
+	await initS3()
+	await ensureBucketExists()
+
+	await initDynamoDB()
+	await ensureJobsTable()
+
+	app.listen(port, () => {
+		console.log(`Server started on port ${port}`)
 	})
-	.then(() => {
-		app.listen(port, () => {
-			console.log(`Server started on port ${port}`)
-		})
-	})
+}
+
+start()
