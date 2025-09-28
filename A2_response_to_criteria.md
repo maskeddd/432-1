@@ -18,7 +18,7 @@ Overview
 - **Partner name (if applicable):** Trevin Juanli n12040886
 - **Application name:** clipper
 - **Two line description:** This REST API provides a way to clip an uploaded video into segments,  Users authenticate with Cognito and clipped video stored in s3 while job data is stored in DynamoDB.
-- **EC2 instance name or ID:**
+- **EC2 instance name or ID:** i-041bca8446760c9bb
 
 ------------------------------------------------
 
@@ -28,7 +28,7 @@ Overview
 - **What data is being stored?:** Uploaded video files and output clips
 - **Why is this service suited to this data?:** S3 is designed for object storage of large binary files such as video. It provides scalable  storage and integrates well with presigned URL access.
 - **Why are the other services not suitable for this data?:** DynamoDB, RDS, and EBS are not appropriate for storing large binary files. They are better for other type of data.
-- **Bucket/instance/table name:** 
+- **Bucket/instance/table name:** n11558849-uploads
 - **Video timestamp:**
 - **Relevant files:**
     - apps/server/src/services/s3.service.ts
@@ -40,7 +40,7 @@ Overview
 - **What data is being stored?:** JSON job data
 - **Why is this service suited to this data?:** DynamoDB is good for structured JSON like records. Jobs can be uniquely identified by jobId and searched by user.
 - **Why are the other services not suitable for this data?:** S3 is inefficient for structured queries. RDS is more complex to set up and is not needed for simple job metadata.
-- **Bucket/instance/table name:** 
+- **Bucket/instance/table name:** VideoJobs_Group83
 - **Video timestamp:** 
 - **Relevant files:**
     - apps/server/src/services/dynamodb.service.ts
@@ -59,10 +59,11 @@ Overview
 
 ### S3 Pre-signed URLs
 
-- **S3 Bucket names:**
+- **S3 Bucket names:** n11558849-uploads
 - **Video timestamp:**
 - **Relevant files:**
-    -
+    - apps/server/src/services/s3.service.ts
+    - apps/server/src/controllers/files.controller.ts
 
 ### In-memory cache
 
@@ -75,24 +76,25 @@ Overview
 
 ### Core - Statelessness
 
-- **What data is stored within your application that is not stored in cloud data services?:** [eg. intermediate video files that have been transcoded but not stabilised]
-- **Why is this data not considered persistent state?:** [eg. intermediate files can be recreated from source if they are lost]
-- **How does your application ensure data consistency if the app suddenly stops?:** [eg. journal used to record data transactions before they are done.  A separate task scans the journal and corrects problems on startup and once every 5 minutes afterwards. ]
+- **What data is stored within your application that is not stored in cloud data services?:** Only temporary in memory processing state during video clipping operations.
+- **Why is this data not considered persistent state?:** Temporary values can be recreated from S3 and DynamoDB if lost.
+- **How does your application ensure data consistency if the app suddenly stops?:** All jobs and files are persisted in DynamoDB and S3. On restart, the app reloads persisted state. The Docker based deployment make sure containers can be restarted cleanly without data loss.
 - **Relevant files:**
-    -
+    - apps/server/src/services/dynamodb.service.ts
+    - apps/server/src/services/s3.service.ts
 
 ### Graceful handling of persistent connections
 
-- **Type of persistent connection and use:** [eg. server-side-events for progress reporting]
-- **Method for handling lost connections:** [eg. client responds to lost connection by reconnecting and indicating loss of connection to user until connection is re-established ]
+- **Type of persistent connection and use:** HTTP connections for job submissions and polling for job status
+- **Method for handling lost connections:** Client can request job status again from DynamoDB via API.
 - **Relevant files:**
-    -
+    - apps/server/src/controllers/jobs.controller.ts
 
 
 ### Core - Authentication with Cognito
 
-- **User pool name:** ap-southeast-2_JUC9SbgGm
-- **How are authentication tokens handled by the client?:** Client authenticates with Cognito, receives a JWT, and passes it as a token in API requests.
+- **User pool name:** a2-group83
+- **How are authentication tokens handled by the client?:** The frontend authenticates with Cognito, retrieves a JWT, and attaches it as a token in API requests.
 - **Video timestamp:** 
 - **Relevant files:**
     - apps/client/src/routes/auth.tsx
@@ -100,21 +102,21 @@ Overview
 
 ### Cognito multi-factor authentication
 
-- **What factors are used for authentication:** [eg. password, SMS code]
+- **What factors are used for authentication:** Not attempted
 - **Video timestamp:**
 - **Relevant files:**
     -
 
 ### Cognito federated identities
 
-- **Identity providers used:**
+- **Identity providers used:** Not attempted
 - **Video timestamp:**
 - **Relevant files:**
     -
 
 ### Cognito groups
 
-- **How are groups used to set permissions?:** [eg. 'admin' users can delete and ban other users]
+- **How are groups used to set permissions?:** Not attempted
 - **Video timestamp:**
 - **Relevant files:**
     -
@@ -136,22 +138,25 @@ Overview
                         -/group83/qutUsername
 - **Video timestamp:**
 - **Relevant files:**
-    -
+    - apps/server/src/services/ssm.service.ts
 
 ### Secrets manager
 
-- **Secrets names:** [eg. n1234567-youtube-api-key]
+- **Secrets names:** Not attempted
 - **Video timestamp:**
 - **Relevant files:**
     -
 
 ### Infrastructure as code
 
-- **Technology used:** Not attempted
-- **Services deployed:**
-- **Video timestamp:**
+- **Technology used:** Docker + Docker Compose
+- **Services deployed:** Frontend, Backend, optional DynamoDB Local
+- **Video timestamp:** (fill after recording)
 - **Relevant files:**
-    -
+    - docker-compose.prod.yml
+    - infra/docker/server.Dockerfile
+    - infra/docker/client.Dockerfile
+    - deploy.ps1
 
 ### Other (with prior approval only)
 
