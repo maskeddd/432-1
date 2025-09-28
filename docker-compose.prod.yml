@@ -1,18 +1,39 @@
 services:
+  traefik:
+    image: traefik:v3.1
+    container_name: traefik
+    command:
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - client
+      - server
+
   client:
     container_name: client
     image: 901444280953.dkr.ecr.ap-southeast-2.amazonaws.com/group83/client:latest
-    ports:
-      - "80:5173"
-    depends_on:
-      - server
+    expose:
+      - "5173"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.client.rule=Host(`group83.cab432.com`)"
+      - "traefik.http.services.client.loadbalancer.server.port=5173"
     env_file:
       - .env
 
   server:
     container_name: server
     image: 901444280953.dkr.ecr.ap-southeast-2.amazonaws.com/group83/server:latest
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.server.rule=Host(`api.group83.cab432.com`)"
+      - "traefik.http.services.server.loadbalancer.server.port=3000"
     env_file:
       - .env
