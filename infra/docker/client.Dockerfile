@@ -6,15 +6,25 @@ RUN corepack enable
 FROM base AS build
 WORKDIR /usr/src/app
 COPY . .
+
+ARG VITE_COGNITO_AUTHORITY
+ARG VITE_COGNITO_CLIENT_ID
+ARG VITE_COGNITO_REDIRECT_URI
+ARG VITE_COGNITO_DOMAIN
+ARG VITE_API_URL
+
+ENV VITE_COGNITO_AUTHORITY=$VITE_COGNITO_AUTHORITY
+ENV VITE_COGNITO_CLIENT_ID=$VITE_COGNITO_CLIENT_ID
+ENV VITE_COGNITO_REDIRECT_URI=$VITE_COGNITO_REDIRECT_URI
+ENV VITE_COGNITO_DOMAIN=$VITE_COGNITO_DOMAIN
+ENV VITE_API_URL=$VITE_API_URL
+
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-RUN pnpm run -r build
-RUN pnpm deploy --filter=client --prod /prod/client
+RUN pnpm -r build
 
 FROM base AS client
-RUN apk add --no-cache ffmpeg
-
-COPY --from=build /prod/client /prod/client
-
-WORKDIR /prod/client
-EXPOSE 3000
-CMD ["pnpm", "start"]
+RUN pnpm add -g serve
+WORKDIR /app
+COPY --from=build /usr/src/app/apps/client/dist ./dist
+EXPOSE 5173
+CMD ["serve", "-s", "dist", "-l", "5173"]
