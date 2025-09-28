@@ -9,7 +9,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "tsc -p tsconfig.json",
-		"start": "node --env-file=../../.env dist/server.js"
+		"start": "node dist/server.js"
 	},
 	"devDependencies": {
 		"@types/bun": "latest",

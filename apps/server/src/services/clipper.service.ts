@@ -77,13 +77,11 @@ async function runClipper(args: string[]): Promise<void> {
 }
 
 export async function processVideo(
-	input: Express.Multer.File | string,
+	inputPath: string,
 	segments: Segment[],
 	tempDir: string,
 	options: ClipperOptions = {}
 ): Promise<string> {
-	const inputPath = typeof input === "string" ? input : input.path
-
 	if (!inputPath) {
 		throw new Error("No valid input file path provided")
 	}
